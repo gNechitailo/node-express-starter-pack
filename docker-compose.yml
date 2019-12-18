@@ -1,0 +1,29 @@
+# docker-compose.yml
+version: "3"
+services:
+  app:
+    image: node-docker-dev
+    environment:
+      PORT: 3000
+      HOST: localhost
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_NAME: postgres_db
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      M_USER: asdada
+      M_PASS: asdasdasd
+      M_FROM: MyApp <aaa@aaa.aaa>
+    depends_on:
+      - postgres
+    ports:
+      - "3000:3000"
+
+  postgres:
+    image: postgres:10.10-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres_db
+    volumes:
+      - /var/lib/postgresql:/var/lib/postgresql

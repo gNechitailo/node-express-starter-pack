@@ -1,0 +1,7 @@
+.idea/
+.history/
+.vscode
+.eslintrc.json
+node_modules/
+docker-run.txt
+/src/env
