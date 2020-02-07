@@ -1,11 +1,9 @@
+import database from './database';
+
 module.exports = {
 
   // Database
-  username: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
-  host: process.env.DB_HOST,
-  dialect: 'postgres',
+  database,
 
   // MailService
   mailUser: process.env.M_USER,

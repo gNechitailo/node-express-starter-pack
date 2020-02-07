@@ -5,8 +5,7 @@ const { mailCreate } = require('../services/mailService');
 const HttpStatus = require('http-status-codes');
 const makeError = require('./http-error');
 
-const badRequest = makeError.bind(HttpStatus.BAD_REQUEST);
-const unprocessableEntity = makeError.bind(HttpStatus.UNPROCESSABLE_ENTITY);
+const { badRequest, unprocessableEntity } = makeError;
 
 const validateEmail = email => {
   const re = /^[-!#$%&'*+/\w=?^_{|}~](\.?[-!#$%&'*+/\w=?^_{|}~])*@\w(-?\w)*(\.[a-zA-Z](-?\w)*)+$/u;

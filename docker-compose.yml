@@ -17,7 +17,7 @@ services:
     depends_on:
       - postgres
     ports:
-      - "3000:3000"
+      - "8080:3000"
 
   postgres:
     image: postgres:10.10-alpine
@@ -26,4 +26,6 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres_db
     volumes:
-      - /var/lib/postgresql:/var/lib/postgresql
+      - /Users/greg/Projects/postgres-data:/var/lib/postgresql
+    ports:
+      - "3000:5432"

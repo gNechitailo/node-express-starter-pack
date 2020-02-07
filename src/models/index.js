@@ -4,11 +4,11 @@ const fs = require('fs');
 const path = require('path');
 const Sequelize = require('sequelize');
 const basename = path.basename(__filename);
-const config = require('../config/config.js');
+const { database } = require('../config');
 const db = {};
 
 const SLICE = -3;
-const sequelize = new Sequelize(config.database, config.username, config.password, config);
+const sequelize = new Sequelize(database.database, database.username, database.password, database);
 
 // eslint-disable-next-line no-sync
 fs
