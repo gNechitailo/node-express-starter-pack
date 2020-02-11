@@ -8,4 +8,4 @@ RUN npm install
 # RUN npm install --only=production
 
 EXPOSE 3000
-CMD npm start
+CMD ./startup.sh
