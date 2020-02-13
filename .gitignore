@@ -1,6 +1,6 @@
 /node_modules/*
-/src/env/*
-!/src/env/development.env.example
+/env/*
+!/env/development.env.example
 .idea/
 .history/
 .vscode

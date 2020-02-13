@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "devstart": "env-cmd -f ./src/env/development.env nodemon ./bin/www",
-    "migrate-up": "env-cmd -f ./src/env/development.env sequelize db:migrate",
+    "devstart": "env-cmd -f ./env/development.env nodemon ./bin/www",
+    "migrate-up": "env-cmd -f ./env/development.env sequelize db:migrate",
     "migrate-prod-up": "sequelize db:migrate",
     "migrate-down": "env-cmd -f ./src/env/development.env sequelize db:migrate:undo",
     "migrate-down-all": "env-cmd -f ./src/env/development.env sequelize db:migrate:undo:all",

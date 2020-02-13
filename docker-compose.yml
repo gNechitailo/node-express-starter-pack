@@ -3,29 +3,19 @@ version: "3"
 services:
   app:
     image: node-docker-dev
-    environment:
-      PORT: 3000
-      HOST: localhost
-      DB_USER: postgres
-      DB_PASS: postgres
-      DB_NAME: postgres_db
-      DB_HOST: 127.0.0.1
-      DB_PORT: 5432
-      M_USER: asdada
-      M_PASS: asdasdasd
-      M_FROM: MyApp <aaa@aaa.aaa>
+    env_file: env/.env
     depends_on:
-      - postgres
+    - postgres
     ports:
-      - "8080:3000"
-
-  postgres:
-    image: postgres:10.10-alpine
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres_db
-    volumes:
-      - /Users/greg/Projects/postgres-data:/var/lib/postgresql
-    ports:
-      - "3000:5432"
+    - "80:3000"
+  ​
+postgres:
+  image: postgres:10.10-alpine
+  environment:
+    POSTGRES_USER: bidbash
+    POSTGRES_PASSWORD: bidbash
+    POSTGRES_DB: bidbash_db
+  volumes:
+  - /var/lib/postgresql:/var/lib/postgresql
+  ports:
+  - "3000:5432"
