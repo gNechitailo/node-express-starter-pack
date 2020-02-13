@@ -30,18 +30,15 @@ module.exports = (sequelize, DataTypes) => {
     notifyPush: DataTypes.BOOLEAN,
   }, { timestamps: false });
 
-  Users.prototype.hashPassword = function(password) {
-    return new Promise((resolve, reject) => {
+  Users.prototype.hashPassword = async function(password) {
+    this.passwordHash = await new Promise((resolve, reject) => {
       bcrypt.hash(password, BCRYPTVAL, (err, res) => {
         if (err) {
           return reject(err);
         }
-
         return resolve(res);
       });
-    }).then(res => {
-      this.passwordHash = res;
-    });
+    })
   };
 
   Users.prototype.comparePassword = function(password) {

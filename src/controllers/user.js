@@ -26,30 +26,21 @@ module.exports = {
     res.status(HttpStatus.OK).send();
   },
   async resetPassword(req, res) {
-    let userIWillFind;
-
     if (!req.body.password) {
       throw badRequest({ password: 'Please enter correct password' });
     }
     if (!validatePass(req.body.password)) {
       throw badRequest({ password: 'You password much be at least 8 characters long' });
     }
-
-    await Users
-      .findOne({ where: { passwordResetCode: req.body.code } })
-      .then(user => user.update({ passwordResetCode: null }))
-      .then(user => {
-        userIWillFind = user;
-
-        return user.hashPassword(req.body.password);
-      })
-      .then(() => {
-        userIWillFind.save();
-      })
-      .catch(() => {
-        throw badRequest({ resetCode: 'Invalid reset code' });
-      })
-      .then(() => res.status(HttpStatus.ACCEPTED).send());
+    const userToUpdate = await Users
+      .findOne({ where: { passwordResetCode: req.body.code } });
+    if (!userToUpdate) {
+      throw badRequest({ resetCode: 'Invalid reset code' });
+    }
+    await userToUpdate.hashPassword(req.body.password);
+    userToUpdate.passwordResetCode = null;
+    await userToUpdate.save();
+    res.status(HttpStatus.ACCEPTED).send();
   },
   async requestNewPassword(req, res) {
     const resetCode = uuidv();
