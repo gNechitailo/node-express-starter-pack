@@ -13,14 +13,14 @@ const sequelize = new Sequelize(database.database, database.username, database.p
 // eslint-disable-next-line no-sync
 fs
   .readdirSync(__dirname)
-  .filter(file => file.indexOf('.') !== 0 && file !== basename && file.slice(SLICE) === '.js')
-  .forEach(file => {
+  .filter((file) => file.indexOf('.') !== 0 && file !== basename && file.slice(SLICE) === '.js')
+  .forEach((file) => {
     const model = sequelize.import(path.join(__dirname, file));
 
     db[model.name] = model;
   });
 
-Object.keys(db).forEach(modelName => {
+Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
   }

@@ -1,18 +1,53 @@
-'use strict';
+const { Model } = require('sequelize');
+const jwt = require('jsonwebtoken');
+const { refreshTokenLifetimeDays } = require('../config');
+
+class Token extends Model {
+  static makeTokenPair(userId) {
+    const tokenInfo = { userId, now: new Date().toISOString() };
+
+    const authToken = jwt.sign(
+      tokenInfo,
+      'nodeauthsecret', { expiresIn: '1h' },
+    );
+
+    const refreshToken = jwt.sign(
+      tokenInfo,
+      'nodeauthsecret', { expiresIn: `${refreshTokenLifetimeDays}d` },
+    );
+
+    return Token
+      .create({
+        userId,
+        authToken,
+        refreshToken,
+      });
+  }
+
+  toDTO() {
+    return {
+      authToken: this.authToken,
+      refreshToken: this.refreshToken,
+    };
+  }
+}
 
 module.exports = (sequelize, DataTypes) => {
-  const Tokens = sequelize.define('Tokens', {
+  Token.init({
     userId: DataTypes.BIGINT,
     authToken: DataTypes.STRING,
     refreshToken: DataTypes.STRING,
-  }, { timestamps: false });
+  }, {
+    timestamps: true,
+    sequelize,
+  });
 
-  Tokens.associate = function(models) {
-    Tokens.belongsTo(models.Users, {
+  Token.associate = function(models) {
+    Token.belongsTo(models.User, {
       foreignKey: 'userId',
       as: 'user',
     });
   };
 
-  return Tokens;
+  return Token;
 };

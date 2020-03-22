@@ -8,7 +8,7 @@ module.exports = {
       primaryKey: true,
       type: Sequelize.INTEGER,
     },
-    template: { type: Sequelize.STRING },
+    templateName: { type: Sequelize.STRING },
     subject: { type: Sequelize.STRING },
     status: {
       type: Sequelize.ENUM(Object.keys(mailStatus)),
