@@ -1,4 +1,4 @@
-const { mailStatus } = require('../src/customType');
+const { operationStatus } = require('../src/customType');
 
 module.exports = {
   up: (queryInterface, Sequelize) => queryInterface.createTable('Mails', {
@@ -11,8 +11,8 @@ module.exports = {
     templateName: { type: Sequelize.STRING },
     subject: { type: Sequelize.STRING },
     status: {
-      type: Sequelize.ENUM(Object.keys(mailStatus)),
-      defaultValue: mailStatus.active,
+      type: Sequelize.ENUM(Object.keys(operationStatus)),
+      defaultValue: operationStatus.active,
     },
     userId: {
       type: Sequelize.INTEGER,

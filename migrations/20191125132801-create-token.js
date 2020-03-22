@@ -1,6 +1,4 @@
-'use strict';
-
-const TOKEN_LENGTH = 20000;
+const TOKEN_LENGTH = 2000;
 
 module.exports = {
   up: (queryInterface, Sequelize) => queryInterface.createTable('Tokens', {
@@ -20,7 +18,11 @@ module.exports = {
     },
     authToken: { type: Sequelize.STRING(TOKEN_LENGTH) },
     refreshToken: { type: Sequelize.STRING(TOKEN_LENGTH) },
-    createdAt: {},
+    createdAt: {
+      allowNull: false,
+      type: Sequelize.DATE,
+      defaultValue: Sequelize.NOW,
+    },
   }),
   // eslint-disable-next-line no-unused-vars
   down: (queryInterface, Sequelize) => queryInterface.dropTable('Tokens'),

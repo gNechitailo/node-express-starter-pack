@@ -7,8 +7,8 @@
     "devstart": "env-cmd -f .env nodemon ./bin/www",
     "migrate-up": "env-cmd -f .env sequelize db:migrate",
     "migrate-prod-up": "sequelize db:migrate",
-    "migrate-down": "env-cmd -f ./src/env/development.env sequelize db:migrate:undo",
-    "migrate-down-all": "env-cmd -f ./src/env/development.env sequelize db:migrate:undo:all",
+    "migrate-down": "env-cmd -f .env sequelize db:migrate:undo",
+    "migrate-down-all": "env-cmd -f .env sequelize db:migrate:undo:all",
     "pretest": "eslint --ignore-path .gitignore . --fix"
   },
   "dependencies": {
