@@ -1,4 +1,4 @@
-module.exports = user => {
+module.exports = (user) => {
   const html = `
   <!DOCTYPE html>
   <html>

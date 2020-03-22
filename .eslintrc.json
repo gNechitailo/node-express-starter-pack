@@ -77,7 +77,7 @@
       "func-call-spacing": 2,
       "func-name-matching": 0,
       "func-names": 0,
-      "func-style": 2,
+      "func-style": [2, "declaration", { "allowArrowFunctions": true }],
       "function-paren-newline": [
           "error",
           "multiline"
@@ -400,7 +400,6 @@
       ],
       "require-atomic-updates": 1,
       "require-await": 2,
-      "require-jsdoc": 1,
       "require-unicode-regexp": 2,
       "require-yield": 2,
       "rest-spread-spacing": 2,

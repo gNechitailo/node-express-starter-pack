@@ -1,18 +1,17 @@
 {
-  "name": "myApp",
+  "name": "node-express-starter-pack",
   "version": "0.0.0",
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "devstart": "env-cmd -f ./env/development.env nodemon ./bin/www",
-    "migrate-up": "env-cmd -f ./env/development.env sequelize db:migrate",
+    "devstart": "env-cmd -f .env nodemon ./bin/www",
+    "migrate-up": "env-cmd -f .env sequelize db:migrate",
     "migrate-prod-up": "sequelize db:migrate",
     "migrate-down": "env-cmd -f ./src/env/development.env sequelize db:migrate:undo",
     "migrate-down-all": "env-cmd -f ./src/env/development.env sequelize db:migrate:undo:all",
     "pretest": "eslint --ignore-path .gitignore . --fix"
   },
   "dependencies": {
-    "apollo-server": "^2.9.13",
     "bcrypt": "^3.0.7",
     "body-parser": "^1.19.0",
     "cookie-parser": "~1.4.4",
