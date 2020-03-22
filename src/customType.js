@@ -1,34 +1,7 @@
-const userStatus = {
-  regular: 'regular',
-  worker: 'worker',
-};
-
-// Searching for the executor/client
-const participantStatus = {
-  active: 'active',
-  fulfilled: 'fulfilled',
-  rejected: 'rejected',
-};
-
-const sendStatus = {
+const operationStatus = {
   active: 'active',
   rejected: 'rejected',
   fulfilled: 'fulfilled',
-};
-
-const productStatus = {
-  active: 'active',
-  progress: 'progress',
-  paused: 'paused',
-  finished: 'finished',
-};
-
-const notifications = {
-  workerJobReq: 'workerJobReq',
-  customerJobRes: 'customerJobRes',
-  customerJobReq: 'customerJobReq',
-  workerJobRes: 'workerJobRes,',
-  messages: 'messages',
 };
 
 const identityType = {
@@ -39,11 +12,7 @@ const identityType = {
 };
 
 module.exports = {
-  userStatus,
-  participantStatus,
-  sendStatus,
-  productStatus,
-  notifications,
+  operationStatus,
   identityType,
 };
 

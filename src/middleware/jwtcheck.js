@@ -1,31 +1,28 @@
 const jwt = require('jsonwebtoken');
+const HttpStatus = require('http-status-codes');
+const { promisify } = require('util');
+const { nodeAuthSecret } = require('../config/index');
 
-const FORBIDDEN = 403;
+const asyncVerify = promisify(jwt.verify);
 
-module.exports = {
-  ensureToken(req, res, next) {
-    const { headers: { authorization } } = req;
-    const jwtHeader = authorization;
+module.exports = async(req, res, next) => {
+  const authorization = req.headers;
 
-    if (typeof jwtHeader === 'undefined') {
-      res.sendStatus(FORBIDDEN);
+  if (typeof jwtHeader === 'undefined') {
+    res.sendStatus(HttpStatus.FORBIDDEN);
 
-      return;
-    }
+    return;
+  }
 
-    const JWT = jwtHeader.split(' ');
-    const jwtToken = JWT[1];
+  const JWT = authorization.split(' ');
+  const jwtToken = JWT[1];
 
-    jwt.verify(jwtToken, 'nodeauthsecret', err => {
-      if (err) {
-        res.sendStatus(FORBIDDEN);
+  try {
+    const decodedToken = await asyncVerify(jwtToken, nodeAuthSecret);
+    req.userId = decodedToken.userId;
 
-        return;
-      }
-      const decodedToken = jwt.decode(jwtToken);
-
-      req.userId = decodedToken.id;
-      next();
-    });
-  },
+    return next();
+  } catch (error) {
+    res.sendStatus(HttpStatus.FORBIDDEN);
+  }
 };
