@@ -1,5 +1,6 @@
 const express = require('express');
 const HttpStatus = require('http-status-codes');
+const HttpError = require('../controllers/http-error');
 
 const router = new express.Router();
 
@@ -12,15 +13,24 @@ router.use('/auth', authRouter);
 router.use('/user', userRouter);
 router.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+function extractMessage(error) {
+  if (error instanceof HttpError) {
+    return error.data;
+  }
+  if (process.env.NODE_ENV === 'production') {
+    return { serverError: 'Something went wrong. Please try again later' };
+  }
+
+  return { serverError: error.message };
+}
+
 // eslint-disable-next-line no-unused-vars
 router.use((error, req, res, next) => {
-  const message = error.data ? error.data : { serverError: error.message };
-
-  console.log(message);
+  const message = extractMessage(error);
 
   res
     .status(error.code || HttpStatus.INTERNAL_SERVER_ERROR)
-    .json({ error: message });
+    .json(message);
 });
 
 module.exports = router;

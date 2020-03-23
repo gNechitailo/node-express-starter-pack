@@ -1,21 +1,33 @@
 const HttpStatus = require('http-status-codes');
+const debug = require('debug')('App:HttpError');
 
-const makeError = (code, why) => {
-  const error = new Error('Something went wrong');
+class HttpError extends Error {
+  constructor(code, why) {
+    super(why);
+    this.data = why;
+    this.code = code;
+    debug('At make error', why);
+  }
 
-  console.log('At make error');
-  console.log(why);
-  error.data = why;
-  error.code = code;
+  static withCode(code) {
+    return (why) => new HttpError(code, why);
+  }
 
-  return error;
-};
+  static unprocessableEntity(why) {
+    return new HttpError(HttpStatus.UNPROCESSABLE_ENTITY, why);
+  }
 
-makeError.bind = code => why => makeError(code, why);
+  static badRequest(why) {
+    return new HttpError(HttpStatus.BAD_REQUEST, why);
+  }
 
-makeError.unprocessableEntity = makeError.bind(HttpStatus.UNPROCESSABLE_ENTITY);
-makeError.badRequest = makeError.bind(HttpStatus.BAD_REQUEST);
+  static forbidden(why) {
+    return new HttpError(HttpStatus.FORBIDDEN, why);
+  }
 
-module.exports = makeError;
+  static unauthorized(why) {
+    return new HttpError(HttpStatus.UNAUTHORIZED, why);
+  }
+}
 
-
+module.exports = HttpError;
