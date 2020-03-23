@@ -12,6 +12,7 @@
     "pretest": "eslint --ignore-path .gitignore . --fix"
   },
   "dependencies": {
+    "babel-eslint": "^10.1.0",
     "bcrypt": "^3.0.7",
     "body-parser": "^1.19.0",
     "cookie-parser": "~1.4.4",

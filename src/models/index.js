@@ -1,5 +1,3 @@
-'use strict';
-
 const fs = require('fs');
 const path = require('path');
 const Sequelize = require('sequelize');
@@ -8,7 +6,10 @@ const { database } = require('../config');
 const db = {};
 
 const SLICE = -3;
-const sequelize = new Sequelize(database.database, database.username, database.password, database);
+const sequelize = new Sequelize(database.database, database.username, database.password, {
+  ...database,
+  logging: null, // This is to prevent sequelize logging to console (but keep debug)
+});
 
 // eslint-disable-next-line no-sync
 fs
