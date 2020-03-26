@@ -2,10 +2,10 @@ const Sequelize = require('sequelize');
 const nodemailer = require('nodemailer');
 const { promisify } = require('util');
 const { Mail, User } = require('../models');
-const debug = require('debug')('MyApp:emailService');
 const config = require('../config');
-const makeEmail = require('../emails/index');
+const makeEmail = require('../mails/index');
 const { operationStatus } = require('../customType');
+const debug = require('debug')('MyApp:emailService');
 
 // Example transporter
 const transporter = nodemailer.createTransport({
@@ -40,15 +40,19 @@ async function sendMail() {
     ],
   });
 
-  debug(`Sending mails, ${mailTasks.length} to be sent`);
+  if (mailTasks.length) {
+    debug(`Sending mails, ${mailTasks.length} to be sent`);
+  } else {
+    debug(`No mails to be sent`);
+  }
 
   const successful = [];
   const failed = [];
   const promises = mailTasks.map(async(mailTask) => {
-    const { html, subject } = makeEmail(mailTask.template, mailTask.user);
-    const receiver = mailTask.user.dataValues.userEmail;
-
     try {
+      const { html, subject } = makeEmail(mailTask.templateName, mailTask.user);
+
+      const receiver = mailTask.email || mailTask.user.email;
       await sendLetter(subject, html, receiver);
 
       successful.push(mailTask.id);
@@ -76,12 +80,10 @@ async function sendMail() {
   }
 }
 
-const mailCreate = (userId, templateName, additionalInfo) => {
-  return Mail.create({
-    userId,
-    templateName,
-    additionalInfo,
-  });
-};
+const mailCreate = (userId, templateName, additionalInfo) => Mail.create({
+  userId,
+  templateName,
+  additionalInfo,
+});
 
 module.exports = { sendMail, mailCreate };

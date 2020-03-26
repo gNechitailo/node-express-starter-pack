@@ -14,5 +14,7 @@ module.exports = {
 
   nodeAuthSecret: process.env.NODE_AUTH_SECRET,
 
+  frontendOrigin: process.env.FRONTEND_ORIGIN,
+
   refreshTokenLifetimeDays: parseInt(process.env.REFRESH_TOKEN_LIFETIME_DAYS) || DEFAULT_REFRESH_TOKEN_LIFETIME_DAYS,
 };

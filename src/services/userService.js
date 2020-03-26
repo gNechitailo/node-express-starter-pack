@@ -1,114 +1,89 @@
-const { Users } = require('../models');
-const { Tokens } = require('../models');
+const { User } = require('../models');
 const uuid = require('uuid/v4');
-const { mailCreate } = require('../services/mailService');
-const HttpStatus = require('http-status-codes');
-const makeError = require('../controllers/http-error');
-
-const badRequest = makeError.bind(HttpStatus.BAD_REQUEST);
-const unauthorized = makeError.bind(HttpStatus.UNAUTHORIZED);
-const unprocessableEntity = makeError.bind(HttpStatus.UNPROCESSABLE_ENTITY);
+const {
+  badRequest,
+  unprocessableEntity,
+  notFound,
+} = require('../controllers/http-error');
 
 module.exports = {
-  updateUserDetails(id, info) {
-    return Users
-      .findOne({ where: { id } })
-      .then(user => user.update({
-        about: info.about,
-        phoneNumber: info.phoneNumber,
-      }));
-  },
-  confirmEmail(code) {
-    if (!code) {
-      throw badRequest({ confirmationCode: 'Invalid confirmation code' });
-    }
-
-    return Users
-      .findOne({ where: { confirmationCode: code } })
-      .then(userCode => userCode.update({ confirmationCode: null }));
-  },
-  async registration(body) {
-    const confirmationCode = uuid();
-
-    body.confirmationCode = confirmationCode;
-    const existingUser = await Users.findOne({ where: { email: body.email } });
+  async register(userInfo) {
+    userInfo.confirmationCode = uuid();
+    const existingUser = await User.findOne({ where: { email: userInfo.email } });
 
     if (existingUser) {
-      throw unauthorized({ email: 'Registration failed. Email address already in use' });
+      throw badRequest({ email: 'Registration failed. Email address already in use' });
     }
 
-    const user = Users.build(body);
+    const user = User.build(userInfo);
 
-    await user.hashPassword(body.password);
+    await user.hashPassword(userInfo.password);
     await user.save();
 
-    await mailCreate(user.id, 'activateAccount', { confirmationCode });
+    return user;
   },
-  getUser(authToken) {
-    if (!authToken) {
-      throw badRequest({ token: 'Token not found' });
+  async confirmEmail(code) {
+    if (!code) {
+      throw badRequest({ confirmationCode: 'No confirmation code provided' });
     }
 
-    return Tokens
-      .findOne({
-        where: { authToken },
-        include: [
-          {
-            model: Users,
-            as: 'user',
-          },
-        ],
-      });
-  },
-  async checkPassword(email, password) {
-    if (!email || !password) {
-      throw unprocessableEntity({});
+    const [ affectedRowsNum ] = await User.update({
+      confirmationCode: null,
+    }, {
+      where: { confirmationCode: code },
+    });
+
+    if (affectedRowsNum === 0) {
+      throw notFound({ confirmationCode: 'The code is either outdated or incorrect' });
     }
+  },
 
-    const user = await Users.findOne({ where: { email } });
-
+  async requestNewPassword(email) {
+    const user = await User.findOne({ where: { email } });
     if (!user) {
-      throw unprocessableEntity();
+      throw notFound({ email: 'User with such email is not registered' });
     }
 
-    const isMatch = await user.comparePassword(password);
+    user.passwordResetCode = uuid();
+    await user.save();
 
-    if (!isMatch) {
-      throw unprocessableEntity();
-    }
+    return user;
   },
-  async updatePassword(email, passwordOld, password) {
-    if (!email || !password || !passwordOld) {
-      throw unprocessableEntity({});
+
+  async resetPasswordByCode(code, password) {
+    const userToUpdate = await User
+      .findOne({ where: { passwordResetCode: code } });
+
+    if (!userToUpdate) {
+      throw notFound({ resetCode: 'Reset code is not found' });
     }
 
-    const user = await Users.findOne({ where: { email } });
+    await userToUpdate.hashPassword(password);
+    userToUpdate.passwordResetCode = null;
+    await userToUpdate.save();
+  },
 
-    if (!user) {
-      throw unprocessableEntity();
-    }
+  async updateUserDetails(originalUser, update) {
+    const updatableFields = User.editableFields(update);
+    const resultUser = Object.assign(originalUser, updatableFields);
 
-    const isMatch = await user.comparePassword(passwordOld);
+    await resultUser.save();
 
-    if (!isMatch) {
-      throw unprocessableEntity();
+    return resultUser;
+  },
+
+  getUserById(id) {
+    return User.findByPk(parseInt(id));
+  },
+
+  async updatePassword(user, passwordOld, password) {
+    const match = await user.comparePassword(passwordOld);
+
+    if (!match) {
+      throw unprocessableEntity({ passwordOld: 'Provided password is incorrect' });
     }
 
     await user.hashPassword(password);
     await user.save();
-  },
-  updateNotificationSettings(
-    id,
-    notificationsMessages,
-    notificationsJobs,
-    notificationsRequests,
-    notifyEmail,
-    notifyPush,
-  ) {
-    return Users
-      .update(
-        { notificationsMessages, notificationsJobs, notificationsRequests, notifyEmail, notifyPush },
-        { where: { id } },
-      );
   },
 };

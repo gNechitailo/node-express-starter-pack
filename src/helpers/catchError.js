@@ -1,19 +1,18 @@
-const wrap = handler => async(req, res, next) => {
-  try {
-    await handler(req, res, next);
-  } catch (error) {
-    return next(error);
-  }
-};
+function wrap(handler) {
+  return async function(req, res, next) {
+    try {
+      await handler(req, res, next);
+    } catch (error) {
+      return next(error);
+    }
+  };
+}
 
-const wrapController = controller => {
-  const result = {};
-
-  Object.keys(controller).forEach(handlerKey => {
-    result[handlerKey] = wrap(controller[handlerKey]);
+// Waiting for @decorators in stable
+const wrapController = (controller) => {
+  Object.keys(controller).forEach((handlerKey) => {
+    controller[handlerKey] = wrap(controller[handlerKey]);
   });
-
-  return result;
 };
 
 module.exports = {

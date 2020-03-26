@@ -21,6 +21,10 @@ class HttpError extends Error {
     return new HttpError(HttpStatus.BAD_REQUEST, why);
   }
 
+  static notFound(why) {
+    return new HttpError(HttpStatus.NOT_FOUND, why);
+  }
+
   static forbidden(why) {
     return new HttpError(HttpStatus.FORBIDDEN, why);
   }

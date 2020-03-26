@@ -1,175 +1,121 @@
-const { Users } = require('../models');
-const uuidv = require('uuid/v4');
 const userService = require('../services/userService');
-const { mailCreate } = require('../services/mailService');
+const mailService = require('../services/mailService');
 const HttpStatus = require('http-status-codes');
 const makeError = require('./http-error');
-
+const { wrapController } = require('../helpers/catchError');
 const { badRequest, unprocessableEntity } = makeError;
 
-const validateEmail = email => {
+const validateEmail = (email) => {
   const re = /^[-!#$%&'*+/\w=?^_{|}~](\.?[-!#$%&'*+/\w=?^_{|}~])*@\w(-?\w)*(\.[a-zA-Z](-?\w)*)+$/u;
 
   return re.test(email);
 };
 
-const validatePass = password => {
-  const re = /.{8,}/gu;
+// eslint-disable-next-line no-magic-numbers
+const validatePass = (password) => password.length >= 8;
 
-  return re.test(password);
-};
+function MakeUserController() {
+  const controller = {
+    getUser(req, res) {
+      res.status(HttpStatus.OK).json(req.user.toDTO());
+    },
 
-module.exports = {
-  async confirmEmail(req, res) {
-    await userService.confirmEmail(req.params.code);
+    async register(req, res) {
+      const { body } = req;
+      const error = {};
 
-    res.status(HttpStatus.OK).send();
-  },
-  async resetPassword(req, res) {
-    if (!req.body.password) {
-      throw badRequest({ password: 'Please enter correct password' });
-    }
-    if (!validatePass(req.body.password)) {
-      throw badRequest({ password: 'You password much be at least 8 characters long' });
-    }
-    const userToUpdate = await Users
-      .findOne({ where: { passwordResetCode: req.body.code } });
-    if (!userToUpdate) {
-      throw badRequest({ resetCode: 'Invalid reset code' });
-    }
-    await userToUpdate.hashPassword(req.body.password);
-    userToUpdate.passwordResetCode = null;
-    await userToUpdate.save();
-    res.status(HttpStatus.ACCEPTED).send();
-  },
-  async requestNewPassword(req, res) {
-    const resetCode = uuidv();
+      if (!body.firstName) {
+        error.firstName = 'Please enter correct first name';
+      }
+      if (!body.lastName) {
+        error.lastName = 'Please enter correct last name';
+      }
+      if (!body.email) {
+        error.email = 'Please enter correct email';
+      }
+      if (!body.password) {
+        error.password = 'Please enter correct password';
+      }
+      if (Object.keys(error).length) {
+        throw unprocessableEntity(error);
+      }
+      if (!validateEmail(body.email)) {
+        throw badRequest({ email: 'Please enter correct email' });
+      }
+      if (!validatePass(body.password)) {
+        throw badRequest({ password: 'Please enter valid password' });
+      }
 
-    if (!req.body.email) {
-      throw badRequest({ email: 'Please enter correct email' });
-    }
+      const createdUser = await userService.register(body);
 
-    const user = await Users.findOne({ where: { email: req.body.email } });
+      await mailService.mailCreate(createdUser.id, 'activateAccount', {
+        confirmationCode: createdUser.confirmationCode,
+      });
 
-    if (!user) {
-      throw unprocessableEntity({ user: 'User is not registered' });
-    }
+      res.sendStatus(HttpStatus.CREATED);
+    },
 
-    await Promise.all([
-      user.update({ passwordResetCode: resetCode }),
-      mailCreate(user.id, 'resetPassword', { passwordResetCode: resetCode }),
-    ]);
-    res.status(HttpStatus.ACCEPTED).send();
-  },
-  async register(req, res) {
-    const { body } = req;
-    const error = {};
+    async confirmEmail(req, res) {
+      const { code } = req.params;
+      await userService.confirmEmail(code);
 
-    if (!body.firstName) {
-      error.firstName = 'Please enter correct first name';
-    }
-    if (!body.lastName) {
-      error.lastName = 'Please enter correct last name';
-    }
-    if (!body.email) {
-      error.email = 'Please enter correct email';
-    }
-    if (!body.password) {
-      error.password = 'Please enter correct password';
-    }
-    if (!body.zip) {
-      error.zip = 'Please enter your zip code';
-    }
-    if (Object.keys(error).length) {
-      throw unprocessableEntity(error);
-    }
-    if (!validateEmail(body.email)) {
-      throw badRequest({ email: 'Please enter correct email' });
-    }
-    if (!validatePass(body.password)) {
-      throw badRequest({ password: 'You password much be at least 8 characters long' });
-    }
+      res.sendStatus(HttpStatus.OK);
+    },
 
+    async requestNewPassword(req, res) {
+      const { email } = req.body;
 
-    await userService.registration(body);
+      if (!email) {
+        throw badRequest({ email: 'Please enter correct email' });
+      }
 
-    res.status(HttpStatus.CREATED).send();
-  },
-  async updateUserDetails(req, res) {
-    const { body: { id, about, phoneNumber } } = req;
+      const { id: userId, passwordResetCode } = await userService.requestNewPassword(email);
+      await mailService.mailCreate(userId, 'resetPassword', { passwordResetCode });
 
-    if (!id) {
-      throw badRequest({ user: 'User not found' });
-    }
+      res.sendStatus(HttpStatus.ACCEPTED);
+    },
 
-    const user = await userService.updateUserDetails(id, { about, phoneNumber });
+    async resetPassword(req, res) {
+      const { password, code } = req.body;
 
-    res.status(HttpStatus.OK).send(user);
-  },
-  async getUser(req, res) {
-    const info = await userService.getUser(req.params.token);
+      if (!password || !validatePass(password)) {
+        throw badRequest({ password: 'Please enter a password at least 8 characters long' });
+      }
 
-    res.status(HttpStatus.OK).send({
-      id: info.user.id,
-      firstName: info.user.firstName,
-      lastName: info.user.lastName,
-      zip: info.user.zip,
-      email: info.user.email,
-      verified: info.user.verified,
-    });
-  },
-  async deleteNumber(req, res) {
-    await userService.deleteNumber(req.params.phoneNumber);
+      await userService.resetPasswordByCode(code, password);
+      res.sendStatus(HttpStatus.ACCEPTED);
+    },
 
-    res.status(HttpStatus.OK).send();
-  },
-  async checkPassword(req, res) {
-    const { body: { email, password } } = req;
+    async updateUserDetails(req, res) {
+      const { user } = req;
+      const updateFields = req.body;
 
-    if (!email) {
-      throw badRequest({ user: 'User not found' });
-    }
+      const updatedUser = await userService.updateUserDetails(user, updateFields);
 
-    await userService.checkPassword(email, password);
+      res.status(HttpStatus.OK).json(updatedUser.toDTO());
+    },
 
-    res.status(HttpStatus.OK).send();
-  },
-  async updatePassword(req, res) {
-    const { body: { email, passwordOld, password } } = req;
+    async updatePassword(req, res) {
+      const { user } = req;
+      const { passwordOld, password } = req.body;
 
-    if (!email) {
-      throw badRequest({ user: 'User not found' });
-    }
+      if (!passwordOld) {
+        throw badRequest({ user: 'Enter your old password' });
+      }
 
-    await userService.updatePassword(email, passwordOld, password);
+      if (!password) {
+        throw badRequest({ user: 'Enter your new password' });
+      }
 
-    res.status(HttpStatus.OK).send();
-  },
-  async updateNotificationSettings(req, res) {
-    const {
-      body: {
-        id,
-        notificationsMessages,
-        notificationsJobs,
-        notificationsRequests,
-        notifyEmail,
-        notifyPush,
-      },
-    } = req;
+      await userService.updatePassword(user, passwordOld, password);
 
-    if (!id) {
-      throw badRequest({ user: 'User not found' });
-    }
+      res.sendStatus(HttpStatus.OK);
+    },
+  };
 
-    await userService.updateNotificationSettings(
-      id,
-      notificationsMessages,
-      notificationsJobs,
-      notificationsRequests,
-      notifyEmail,
-      notifyPush,
-    );
+  wrapController(controller);
 
-    res.status(HttpStatus.OK).send();
-  },
-};
+  return controller;
+}
+
+module.exports = MakeUserController;
