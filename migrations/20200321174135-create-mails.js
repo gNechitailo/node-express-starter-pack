@@ -22,6 +22,10 @@ module.exports = {
       },
     },
     email: Sequelize.STRING,
+    additionalInfo: {
+      type: Sequelize.JSON,
+      defaultValue: {},
+    },
     createdAt: {
       allowNull: false,
       type: Sequelize.DATE,

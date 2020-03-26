@@ -1,4 +1,8 @@
+const { makeLink } = require('./mailHelpers');
+
 module.exports = (user) => {
+  const resetLink = makeLink(`/reset-password?reset-password-token=${user.passwordResetCode}`);
+
   const html = `
   <!DOCTYPE html>
   <html>
@@ -13,8 +17,7 @@ module.exports = (user) => {
         Click the link below to reset it.
         If you did not request a password reset, please ignore the email or reply it to let us know.
       </p>
-      <a href="http://bid-bash-staging.herokuapp.com/reset-password?reset-password-token=${user.passwordResetCode}"
-      style="font-size: 130%;">
+      <a href="${resetLink}" style="font-size: 130%;">
         Click here to reset password
       </a>
       <p style="font-size: 180%; font-family: Georgia, 'Times New Roman', Times, serif; color: black">

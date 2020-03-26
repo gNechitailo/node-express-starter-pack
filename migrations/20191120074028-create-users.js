@@ -27,10 +27,7 @@ module.exports = {
       allowNull: false,
       type: Sequelize.STRING,
     },
-    zip: {
-      allowNull: false,
-      type: Sequelize.STRING,
-    },
+    zip: { type: Sequelize.STRING },
     phoneNumber: { type: Sequelize.INTEGER },
     photo: { type: Sequelize.STRING },
     location: { type: Sequelize.STRING },

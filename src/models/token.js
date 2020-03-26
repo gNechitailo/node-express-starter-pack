@@ -1,6 +1,6 @@
 const { Model } = require('sequelize');
 const jwt = require('jsonwebtoken');
-const { refreshTokenLifetimeDays } = require('../config');
+const { nodeAuthSecret, refreshTokenLifetimeDays } = require('../config');
 
 class Token extends Model {
   static makeTokenPair(userId) {
@@ -8,12 +8,14 @@ class Token extends Model {
 
     const authToken = jwt.sign(
       tokenInfo,
-      'nodeauthsecret', { expiresIn: '1h' },
+      nodeAuthSecret,
+      { expiresIn: '1h' },
     );
 
     const refreshToken = jwt.sign(
       tokenInfo,
-      'nodeauthsecret', { expiresIn: `${refreshTokenLifetimeDays}d` },
+      nodeAuthSecret,
+      { expiresIn: `${refreshTokenLifetimeDays}d` },
     );
 
     return Token
@@ -39,6 +41,7 @@ module.exports = (sequelize, DataTypes) => {
     refreshToken: DataTypes.STRING,
   }, {
     timestamps: true,
+    updatedAt: false,
     sequelize,
   });
 

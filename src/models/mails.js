@@ -10,6 +10,7 @@ module.exports = (sequelize, DataTypes) => {
     status: DataTypes.ENUM(Object.keys(operationStatus)),
     userId: DataTypes.INTEGER,
     email: DataTypes.STRING,
+    additionalInfo: DataTypes.JSON, // Which information is required to make a letter
   }, { sequelize });
 
   Mail.associate = function(models) {

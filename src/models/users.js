@@ -3,18 +3,57 @@ const bcrypt = require('bcrypt');
 
 const SALT_ROUNDS = 10;
 
+const EditableFields = [
+  'firstName',
+  'lastName',
+  'phoneNumber',
+  'photo',
+  'zip',
+  'location',
+  'about',
+];
+
+const DtoFields = [
+  'id',
+  'email',
+  ...EditableFields,
+];
+
 class User extends Model {
-  static async hashPassword(password) {
+  async hashPassword(password) {
     this.passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
     return this.passwordHash;
   }
 
+  toDTO() {
+    return User.toDTO(this);
+  }
+
+  static toDTO(sourceObject) {
+    return DtoFields.reduce((result, key) => {
+      result[key] = sourceObject[key];
+
+      return result;
+    }, {});
+  }
+
+  static editableFields(sourceObject) {
+    return EditableFields.reduce((result, key) => {
+      if (typeof sourceObject[key] !== 'undefined') {
+        result[key] = sourceObject[key];
+      }
+
+      return result;
+    }, {});
+  }
+
+  // WARNING: this function returns Promise
   comparePassword(password) {
     try {
       return bcrypt.compare(password, this.passwordHash);
     } catch (error) {
-      return false;
+      return Promise.reject();
     }
   }
 }

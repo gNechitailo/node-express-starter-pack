@@ -1,4 +1,4 @@
-const TOKEN_LENGTH = 2000;
+const TOKEN_LENGTH = 400;
 
 module.exports = {
   up: (queryInterface, Sequelize) => queryInterface.createTable('Tokens', {

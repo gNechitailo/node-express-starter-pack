@@ -3,4 +3,4 @@ const templates = {
   resetPassword: require('./resetPassword'),
 };
 
-module.exports = (template, user) => templates[template](user);
+module.exports = (template, user, additionalInfo) => templates[template](user, additionalInfo);
