@@ -25,7 +25,7 @@
               "minItems": 3
           }
       ],
-      "array-bracket-spacing": 2,
+      "array-bracket-spacing": [ 2, "always"],
       "array-callback-return": 2,
       "array-element-newline": ["error","consistent"],
       "arrow-body-style": [
@@ -325,12 +325,7 @@
       "no-whitespace-before-property": 2,
       "no-with": 2,
       "nonblock-statement-body-position": 2,
-      "object-curly-newline": [
-          "error",
-          {
-              "multiline": true
-          }
-      ],
+      "object-curly-newline": 2,
       "object-curly-spacing": [
           "error",
           "always"
