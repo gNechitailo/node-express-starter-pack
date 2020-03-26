@@ -1,0 +1,306 @@
+swagger: "2.0"
+info:
+  version: 1.0.0
+  title: MyApp-API
+  description: MyApp info
+tags:
+  - name: User
+    description: Actions related to manipulating with users
+  - name: Auth
+    description: Manipulations with authorization tokens
+basePath: '/api/v1'
+paths:
+  /user/register:
+    post:
+      tags:
+        - User
+      summary: Register new user
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: User object that needs to be added to the system
+          required: true
+          schema:
+            $ref: '#/definitions/UserRegistrationObject'
+      responses:
+        '201':
+          description: Added new user
+        '400':
+          description: The password must consist of 8 or more characters
+        '401':
+          description: Registration failed. Check fields
+  /user/confirm/{code}:
+    get:
+      tags:
+        - User
+      summary: The final step of the registration process with confirmation code
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: code
+          description: Code completing the registration process
+          required: true
+      schema:
+        type: string
+        required: true
+      responses:
+        '202':
+          description: User confirm
+  /user/request-password-reset:
+    post:
+      tags:
+        - User
+      summary: Request to reset the password by email
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                example: sarah-norhon@example.com
+      responses:
+        '201':
+          description: User password reset requested
+        '400':
+          description: User is not registered
+        '422':
+          description: Please enter correct email
+  /user/password-reset:
+    post:
+      tags:
+        - User
+      summary: Actually replace old password with the new one
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          schema:
+            type: object
+            properties:
+              password:
+                type: string
+                example: 12345Admin
+                description: New password
+              code:
+                type: string
+                example: 634f3ecc-9dbc-427d-86a9-4a3c02c65d69
+                description: Code from email link (UUID)
+      responses:
+        '201':
+          description: User password reset requested
+        '400':
+          description: User is not registered
+        '422':
+          description: Please enter correct email
+  /user:
+    get:
+      tags:
+        - User
+      summary: Get user info
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          type: string
+      responses:
+        '200':
+          description: User info
+        '400':
+          description: Operation error
+        '401':
+          description: Unauthorized
+    put:
+      tags:
+        - User
+      summary: Update user info
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: User fields that we'd like to update
+          required: true
+          schema:
+            $ref: '#/definitions/UserUpdateModel'
+      responses:
+        '200':
+          description: User info
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/UserDTO'
+        '400':
+          description: Operation error
+        '401':
+          description: Unauthorized
+
+  /user/update-pass:
+    post:
+      tags:
+        - User
+      summary: Update user password when the user knows their old password
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          type: string
+        - in: body
+          name: body
+          schema:
+            type: object
+            properties:
+              passwordOld:
+                type: string
+                example: 12345Admin
+                description: New password
+              password:
+                type: string
+                example: passwordexample
+                description: New password
+      responses:
+        '200':
+          description: ''
+        '400':
+          description: ''
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Authorizes the user in the system
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          schema:
+            $ref: '#/definitions/AuthModel'
+      responses:
+        '200':
+          description: User info and JWT token
+        '422':
+          description: Something went wrong
+  /auth/refresh-token:
+    post:
+      tags:
+        - Auth
+      summary: Refresh user authorization token
+      consumes: application/json
+      produces: application/json
+      parameters:
+        - in: body
+          name: body
+          schema:
+            type: object
+            properties:
+              refreshToken:
+                type: string
+      responses:
+        '200':
+          description: New JWT token pair
+        '400':
+          description: Something went wrong
+  /auth/logout:
+    delete:
+      tags:
+        - Auth
+      summary: Logout the user in the system
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          type: string
+      responses:
+        '200':
+          description: User logout
+        '401':
+          description: Unauthorized
+
+definitions:
+  AuthModel:
+    type: object
+    required:
+      - email
+      - password
+    properties:
+      email:
+        type: string
+        example: sarah-norhon@example.com
+      password:
+        type: string
+        example: passwordexample
+  UserUpdateModel:
+    type: object
+    properties:
+      firstName:
+        type: string
+        example: Sarah
+      lastName:
+        type: string
+        example: Gordon
+      zip:
+        type: string
+        example: 347922
+        description: Postal code
+      phoneNumber:
+        type: string
+        example: +7202020202020
+      location:
+        type: string
+      about:
+        type: string
+  UserDTO:
+    allOf:
+      - type: object
+        properties:
+          id:
+            type: number
+          email:
+            type: string
+      - $ref: '#/definitions/UserUpdateModel'
+
+  UserRegistrationObject:
+    allOf:
+      - $ref: '#/definitions/AuthModel'
+      - $ref: '#/definitions/UserUpdateModel'
+      - type: object
+        required:
+          - email
+          - password
+          - firstName
+          - lastName

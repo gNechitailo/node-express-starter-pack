@@ -1,10 +1,11 @@
 const express = require('express');
 const router = new express.Router();
-const authController = require('../controllers/auth');
-const { wrapController } = require('../helpers/catchError');
-const ctrl = wrapController(authController);
+const makeAuthController = require('../controllers/auth');
 
-router.post('/login', ctrl.login);
-router.delete('/logout/:token', ctrl.logout);
+const authController = new makeAuthController();
+
+router.post('/login', authController.handleLogin);
+router.post('/refresh-token', authController.handleRefreshToken);
+router.delete('/logout', authController.handleLogout);
 
 module.exports = router;

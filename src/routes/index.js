@@ -1,5 +1,9 @@
 const express = require('express');
+const path = require('path');
+const YAML = require('yamljs');
+const Sequelize = require('sequelize');
 const HttpStatus = require('http-status-codes');
+
 const HttpError = require('../controllers/http-error');
 
 const router = new express.Router();
@@ -7,7 +11,8 @@ const router = new express.Router();
 const authRouter = require('./auth');
 const userRouter = require('./user');
 const swaggerUi = require('swagger-ui-express');
-const swaggerDocument = require('../swagger.json');
+
+const swaggerDocument = YAML.load(path.join(__dirname, '..', 'swagger.yaml'));
 
 router.use('/auth', authRouter);
 router.use('/user', userRouter);
@@ -19,6 +24,10 @@ function extractMessage(error) {
   }
   if (process.env.NODE_ENV === 'production') {
     return { serverError: 'Something went wrong. Please try again later' };
+  }
+
+  if (error instanceof Sequelize.Error) {
+    return { sql: error.sql, message: error.message };
   }
 
   return { serverError: error.message };

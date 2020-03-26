@@ -1,18 +1,18 @@
 const express = require('express');
-const router = new express.Router();
-const userController = require('../controllers/user');
-const { wrapController } = require('../helpers/catchError');
-const ctrl = wrapController(userController);
+const makeUserController = require('../controllers/user');
+const jwtCheck = require('../middleware/jwtcheck');
 
-router.get('/:token', ctrl.getUser);
-router.get('/confirm/:code', ctrl.confirmEmail);
-router.post('/reset-pass', ctrl.resetPassword);
-router.post('/send', ctrl.requestNewPassword);
-router.post('/signup', ctrl.register);
-router.put('/update-info', ctrl.updateUserDetails);
-router.delete('/delete-num', ctrl.deleteNumber);
-router.post('/check-pass', ctrl.checkPassword);
-router.post('/update-pass', ctrl.updatePassword);
-router.post('/update-notification-settings', ctrl.updateNotificationSettings);
+const userController = makeUserController();
+
+const router = new express.Router();
+
+router.post('/register', userController.register);
+router.get('/confirm/:code', userController.confirmEmail);
+router.post('/request-password-reset', userController.requestNewPassword);
+router.post('/password-reset', userController.resetPassword);
+
+router.post('/update-pass', jwtCheck, userController.updatePassword);
+router.get('/', jwtCheck, userController.getUser);
+router.put('/', jwtCheck, userController.updateUserDetails);
 
 module.exports = router;
