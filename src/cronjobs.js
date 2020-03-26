@@ -2,7 +2,7 @@ const cron = require('node-cron');
 const authService = require('./services/authService');
 const mailService = require('./services/mailService');
 
-module.exports = function start() {
+function start() {
   // If started with PM2 and is "main" process
   if (process.env.NODE_ENV === 'production' && process.env.NODE_APP_INSTANCE !== 0) {
     return;
@@ -15,4 +15,11 @@ module.exports = function start() {
   cron.schedule('*/10 * * * * *', () => {
     mailService.sendMail();
   }).start();
-};
+}
+
+if (require.main === module) {
+  // Called directly
+  start();
+}
+
+module.exports = start();
