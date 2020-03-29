@@ -6,27 +6,9 @@
 
 const debug = require('debug')('MyApp:server');
 const http = require('http');
+const config = require('../src/config');
 const initAppContext = require('../src/app-context-root');
 const makeApp = require('../src/app');
-
-/**
- * Normalize a port into a number, string, or false.
- */
-
-function normalizePort(val) {
-  const port = parseInt(val);
-
-  if (isNaN(port)) {
-    // Named pipe
-    return val;
-  }
-
-  if (port >= 0) {
-    return port;
-  }
-
-  return false;
-}
 
 initAppContext()
   .then((container) => {
@@ -34,15 +16,10 @@ initAppContext()
 
     const app = makeApp({ rootRouter });
 
-    /**
-     * Get port from environment and store in Express.
-     */
-    const port = normalizePort(process.env.PORT || '3000');
-
-    app.set('port', port);
+    app.set('port', config.port);
 
     // When in development, run cron jobs in the same process
-    if (process.env.NODE_ENV === 'development' && !process.env.IS_PM2) {
+    if (process.env.NODE_ENV === 'development' && !config.isPM2) {
       const periodicJobsRunner = container.resolve('periodicJobsRunner');
       periodicJobsRunner.run();
     }
@@ -60,9 +37,9 @@ initAppContext()
         throw error;
       }
 
-      const bind = typeof port === 'string'
-        ? `Pipe ${port}`
-        : `Port ${port}`;
+      const bind = typeof config.port === 'string'
+        ? `Pipe ${config.port}`
+        : `Port ${config.port}`;
 
       // Handle specific listen errors with friendly messages
       switch (error.code) {
@@ -86,7 +63,6 @@ initAppContext()
         ? `pipe ${addr}`
         : `port ${addr.port}`;
 
-
       debug(`Listening on ${bind}`);
     }
 
@@ -94,7 +70,7 @@ initAppContext()
      * Listen on provided port, on all network interfaces.
      */
 
-    server.listen(port);
+    server.listen(config.port);
     server.on('error', onError);
     server.on('listening', onListening);
   });
