@@ -1,5 +1,3 @@
-const userService = require('../services/userService');
-const mailService = require('../services/mailService');
 const HttpStatus = require('http-status-codes');
 const makeError = require('./http-error');
 const { wrapController } = require('../helpers/catchError');
@@ -14,7 +12,7 @@ const validateEmail = (email) => {
 // eslint-disable-next-line no-magic-numbers
 const validatePass = (password) => password.length >= 8;
 
-function MakeUserController() {
+function makeUserController({ userService, mailService }) {
   const controller = {
     getUser(req, res) {
       res.status(HttpStatus.OK).json(req.user.toDTO());
@@ -118,4 +116,4 @@ function MakeUserController() {
   return controller;
 }
 
-module.exports = MakeUserController;
+module.exports = makeUserController;

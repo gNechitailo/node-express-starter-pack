@@ -1,89 +1,86 @@
 const Sequelize = require('sequelize');
-const nodemailer = require('nodemailer');
 const { promisify } = require('util');
-const { Mail, User } = require('../models');
+const nodemailer = require('nodemailer');
 const config = require('../config');
-const makeEmail = require('../mails/index');
+const makeLetter = require('../mails/index');
 const { operationStatus } = require('../customType');
 const debug = require('debug')('MyApp:emailService');
 
-// Example transporter
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: config.mailUser,
-    pass: config.mailPass,
-  },
-});
+module.exports = function makeMailService({ mailTransporter, models }) {
+  const { Mail, User } = models;
 
-const asyncSendMail = promisify(transporter.sendMail.bind(transporter));
+  const asyncSendLetter = promisify(mailTransporter.sendMail.bind(mailTransporter));
 
-const sendLetter = (subject, html, to) => {
-  const mailOptions = {
-    from: config.mailFrom,
-    to,
-    subject,
-    html,
+  const sendLetter = (mailTask) => {
+    const { html, subject } = makeLetter(mailTask.templateName, mailTask.user);
+    const receiverAddress = mailTask.email || mailTask.user.email;
+
+    return asyncSendLetter({
+      from: config.mailFrom,
+      to: receiverAddress,
+      subject,
+      html,
+    }).then((info) => {
+      if (process.env.NODE_ENV === 'development') {
+        debug(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+      }
+    });
   };
 
-  return asyncSendMail(mailOptions);
+  return {
+    async sendMail() {
+      const mailTasks = await Mail.findAll({
+        where: { status: 'active' },
+        include: [
+          {
+            model: User,
+            as: 'user',
+          },
+        ],
+      });
+
+      if (mailTasks.length) {
+        debug(`Sending mails, ${mailTasks.length} to be sent`);
+      } else {
+        debug(`No mails to be sent`);
+      }
+
+      const successful = [];
+      const failed = [];
+      const promises = mailTasks.map(async(mailTask) => {
+        try {
+          await sendLetter(mailTask);
+
+          successful.push(mailTask.id);
+        } catch (ex) {
+          debug('Error during email sending', ex);
+          failed.push(mailTask.id);
+        }
+      });
+
+      await Promise.all(promises);
+
+      try {
+        await Promise.all([
+          Mail.update(
+            { status: operationStatus.fulfilled },
+            { where: { id: { [Sequelize.Op.in]: successful } } },
+          ),
+          Mail.update(
+            { status: operationStatus.rejected },
+            { where: { id: { [Sequelize.Op.in]: failed } } },
+          ),
+        ]);
+      } catch (error) {
+        debug(`Error during email update ${error.message}`);
+      }
+    },
+    mailCreate(userId, templateName, additionalInfo) {
+      return Mail.create({
+        userId,
+        templateName,
+        additionalInfo,
+      });
+    },
+  };
 };
-
-async function sendMail() {
-  const mailTasks = await Mail.findAll({
-    where: { status: 'active' },
-    include: [
-      {
-        model: User,
-        as: 'user',
-      },
-    ],
-  });
-
-  if (mailTasks.length) {
-    debug(`Sending mails, ${mailTasks.length} to be sent`);
-  } else {
-    debug(`No mails to be sent`);
-  }
-
-  const successful = [];
-  const failed = [];
-  const promises = mailTasks.map(async(mailTask) => {
-    try {
-      const { html, subject } = makeEmail(mailTask.templateName, mailTask.user);
-
-      const receiver = mailTask.email || mailTask.user.email;
-      await sendLetter(subject, html, receiver);
-
-      successful.push(mailTask.id);
-    } catch (ex) {
-      debug('Error during email sending', ex);
-      failed.push(mailTask.id);
-    }
-  });
-
-  await Promise.all(promises);
-
-  try {
-    await Promise.all([
-      Mail.update(
-        { status: operationStatus.fulfilled },
-        { where: { id: { [Sequelize.Op.in]: successful } } },
-      ),
-      Mail.update(
-        { status: operationStatus.rejected },
-        { where: { id: { [Sequelize.Op.in]: failed } } },
-      ),
-    ]);
-  } catch (error) {
-    debug('Error during email update');
-  }
-}
-
-const mailCreate = (userId, templateName, additionalInfo) => Mail.create({
-  userId,
-  templateName,
-  additionalInfo,
-});
-
-module.exports = { sendMail, mailCreate };

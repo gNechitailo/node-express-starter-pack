@@ -279,7 +279,7 @@ definitions:
         description: Postal code
       phoneNumber:
         type: string
-        example: +7202020202020
+        example: "+720202020202"
       location:
         type: string
       about:

@@ -1,8 +1,7 @@
-const authService = require('../services/authService');
 const HttpStatus = require('http-status-codes');
 const { wrapController } = require('../helpers/catchError');
 
-function makeAuthController() {
+function makeAuthController({ authService }) {
   const controller = {
     async handleLogin(req, res) {
       const { email, password } = req.body;

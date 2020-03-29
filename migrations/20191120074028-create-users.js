@@ -1,6 +1,6 @@
-'use strict';
 
-const DESCR_LENGTH = 20000;
+const MAX_PHONE_LENGTH = 20;
+const DESCR_LENGTH = 2000;
 
 module.exports = {
   up: (queryInterface, Sequelize) => queryInterface.createTable('Users', {
@@ -28,7 +28,7 @@ module.exports = {
       type: Sequelize.STRING,
     },
     zip: { type: Sequelize.STRING },
-    phoneNumber: { type: Sequelize.INTEGER },
+    phoneNumber: { type: Sequelize.STRING(MAX_PHONE_LENGTH) },
     photo: { type: Sequelize.STRING },
     location: { type: Sequelize.STRING },
     about: { type: Sequelize.STRING(DESCR_LENGTH) },

@@ -29,5 +29,7 @@ Object.keys(db).forEach((modelName) => {
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
+db.ModelError = Sequelize.Error;
+db.extractErrorInfo = ({ sql, message }) => ({ sql, message });
 
 module.exports = db;
