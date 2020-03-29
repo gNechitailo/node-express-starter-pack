@@ -5,6 +5,8 @@
   "scripts": {
     "start": "node ./bin/www",
     "devstart": "env-cmd -f .env nodemon ./bin/www",
+    "devstart-cron": "env-cmd -f .env node ./bin/start-cron.js",
+    "devstart-pm2": "env-cmd -f .env pm2 start ./ecosystem.config.js",
     "migrate-up": "env-cmd -f .env sequelize db:migrate",
     "migrate-prod-up": "sequelize db:migrate",
     "migrate-down": "env-cmd -f .env sequelize db:migrate:undo",
@@ -29,6 +31,7 @@
     "nodemailer": "^6.3.1",
     "pg": "^7.18.2",
     "pg-hstore": "^2.3.3",
+    "pm2": "^4.2.3",
     "sequelize": "^5.21.2",
     "sequelize-cli": "^5.5.1",
     "swagger-ui-express": "^4.1.2",
@@ -44,8 +47,8 @@
     "lint-staged": "^9.5.0",
     "nodemon": "^1.19.4"
   },
-  "engines" : {
-    "node" : ">=12.13"
+  "engines": {
+    "node": ">=12.13"
   },
   "husky": {
     "hooks": {

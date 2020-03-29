@@ -1,4 +1,4 @@
 #!/bin/sh
 
 npm run migrate-prod-up
-npm run start
+pm2-runtime ./ecosystem.config.js
