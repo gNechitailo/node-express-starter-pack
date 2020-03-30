@@ -25,7 +25,7 @@
 ### For production
 1. Check email settings
 2. Check `.env` for `NODE_ENV` (or wherever you keep your ENVs) 
-3. run `docker compose up`
+3. run `docker-compose up`
 
 ## TODO
 
