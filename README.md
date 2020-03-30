@@ -2,7 +2,7 @@
 
 ## Features
 * All errors (including asynchronous) are "piped" to http response
-* IoC container helps you configure everything in 1 place
+* IoC container helps you to configure everything in 1 place
 * Code is ready to be tested since it does not "require" dependencies
 * Authorization, registration ready
 * Eslint configuration
@@ -34,7 +34,7 @@
 * Switch to `fastify`
 * Add html+js into public folder to add debug possibilities
 * Add AWS S3 + multer for file uploads
-* Add more `assert`'s to check everything is configured well
+* Add more `assert`'ions to check everything is configured well
 
 ## ISSUES
 
