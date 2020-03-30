@@ -35,6 +35,7 @@
 * Add html+js into public folder to add debug possibilities
 * Add AWS S3 + multer for file uploads
 * Add more `assert`'ions to check everything is configured well
+* Add schema validation for requests
 
 ## ISSUES
 
