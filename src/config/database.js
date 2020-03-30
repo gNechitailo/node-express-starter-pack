@@ -6,9 +6,9 @@ assert(process.env.DB_NAME, 'DB_NAME is not specified');
 assert(process.env.DB_HOST, 'DB_HOST is not specified');
 
 module.exports = {
-  username: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
+  username: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
+  database: process.env.POSTGRES_DB,
   host: process.env.DB_HOST,
   dialect: 'postgres',
 };

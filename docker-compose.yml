@@ -3,19 +3,16 @@ version: "3"
 services:
   app:
     image: node-docker-dev
-    env_file: env/.env
+    env_file: .env
     depends_on:
     - postgres
     ports:
     - "80:3000"
-  ​
-postgres:
-  image: postgres:10.10-alpine
-  environment:
-    POSTGRES_USER: bidbash
-    POSTGRES_PASSWORD: bidbash
-    POSTGRES_DB: bidbash_db
-  volumes:
-  - /var/lib/postgresql:/var/lib/postgresql
-  ports:
-  - "3000:5432"
+
+  postgres:
+    image: postgres:10.10-alpine
+    env_file: .env
+    volumes:
+    - /var/lib/postgresql:/var/lib/postgresql
+    ports:
+    - "3000:5432"
