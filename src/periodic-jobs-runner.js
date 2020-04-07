@@ -9,7 +9,7 @@ class PeriodicJobsRunner {
   run() {
     cron.schedule('0 2 */10 * *', () => {
       this.authService.cleanOutdatedTokens();
-    });
+    }).start();
 
     cron.schedule('*/10 * * * * *', () => {
       this.mailService.sendMail();
